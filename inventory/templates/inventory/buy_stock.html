@@ -1,0 +1,18 @@
+{% extends 'dashboard/base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow col-md-6 mx-auto">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="fw-bold"><i class="fa-solid fa-truck-ramp-box"></i> Buy Stock (Purchase Order)</h5>
+        </div>
+        <div class="card-body">
+            <p class="text-muted small">Use this form when you buy goods from a factory. This will automatically increase your stock levels.</p>
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-warning w-100 fw-bold">Confirm Purchase</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

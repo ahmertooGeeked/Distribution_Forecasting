@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="card border-0 shadow-sm mx-auto" style="max-width: 850px;">
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="m-0 fw-bold"><i class="fa-solid fa-box-open me-2"></i> Add New Product</h4>
+            </div>
+
+            <div class="card-body p-5">
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-secondary">Product Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fa-solid fa-tag"></i></span>
+                                {{ form.name }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-secondary">Category</label>
+                            {{ form.category }}
+                        </div>
+
+                        <div class="col-12"><hr class="text-muted opacity-25"></div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-secondary">Buying Price (Cost)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">$</span>
+                                {{ form.cost_price }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-secondary">Selling Price</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">$</span>
+                                {{ form.price }}
+                            </div>
+                        </div>
+
+                        <div class="col-12"><hr class="text-muted opacity-25"></div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-secondary">Initial Stock</label>
+                            {{ form.stock_quantity }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-danger">Low Stock Alert Level</label>
+                            {{ form.low_stock_threshold }}
+                            <div class="form-text text-muted small">Alert me when stock falls below this number.</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 d-flex justify-content-end gap-2">
+                        <a href="{% url 'product_list' %}" class="btn btn-light border px-4">Cancel</a>
+                        <button type="submit" class="btn btn-success px-5 fw-bold">
+                            <i class="fa-solid fa-check me-2"></i> Save Product
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // This simple script finds all inputs in the form and makes them look pretty
+        document.querySelectorAll('input, select').forEach(field => {
+            if (!field.classList.contains('form-control') && !field.classList.contains('form-select')) {
+                field.classList.add('form-control');
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">New Sale (Formset)</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Customer</label>
+                        {{ form.customer }}
+                    </div>
+                </div>
+
+                <h5 class="border-bottom pb-2 mb-3">Items</h5>
+
+                {{ formset.management_form }}
+
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Delete?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for form in formset %}
+                            <tr>
+                                <td>{{ form.product }}</td>
+                                <td>{{ form.quantity }}</td>
+                                <td>{{ form.price }}</td>
+                                <td>{{ form.DELETE }}</td>
+                            </tr>
+                            {% for hidden in form.hidden_fields %}
+                                {{ hidden }}
+                            {% endfor %}
+                            {% if form.errors %}
+                            <tr>
+                                <td colspan="4" class="text-danger">
+                                    {{ form.errors }}
+                                </td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <a href="{% url 'order_list' %}" class="btn btn-secondary me-md-2">Cancel</a>
+                    <button type="submit" class="btn btn-success btn-lg">Create Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

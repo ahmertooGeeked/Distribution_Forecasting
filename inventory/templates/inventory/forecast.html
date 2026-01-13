@@ -1,0 +1,146 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">AI Demand Forecast</h1>
+    </div>
+
+    <div class="card mb-4 shadow">
+        <div class="card-body">
+            <form method="GET" class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <label class="col-form-label fw-bold">Select Product to Predict:</label>
+                </div>
+                <div class="col-auto">
+                    <select name="product_id" class="form-select" onchange="this.form.submit()">
+                        {% for p in products %}
+                            <option value="{{ p.id }}" {% if p.id == selected_product.id %}selected{% endif %}>
+                                {{ p.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-dark text-white">
+                    Demand Trend: {{ selected_product.name }}
+                </div>
+                <div class="card-body">
+                    <canvas id="forecastChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow bg-primary text-white mb-4">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Forecast for Next 7 Days</h5>
+                    <p class="display-4 fw-bold">{{ next_week_forecast }} kg</p>
+                    <p class="card-text">Estimated stock needed to meet demand.</p>
+                </div>
+            </div>
+
+            <div class="card shadow">
+                <div class="card-header">Current Status</div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Current Stock
+                        <span class="badge bg-secondary rounded-pill">{{ selected_product.stock_quantity }} kg</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Recommendation
+                        {% if selected_product.stock_quantity < next_week_forecast %}
+                            <span class="badge bg-danger">ORDER MORE</span>
+                        {% else %}
+                            <span class="badge bg-success">SUFFICIENT</span>
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('forecastChart').getContext('2d');
+
+    // 1. Parse data from Django (using |safe filter)
+    const historyDates = {{ dates|safe }};
+    const historySales = {{ actual_sales|safe }};
+    const futureDates = {{ predicted_dates|safe }};
+    const futureSales = {{ predicted_sales|safe }};
+
+    // 2. Combine labels (Past Dates + Future Dates)
+    const allLabels = historyDates.concat(futureDates);
+
+    // 3. Prepare data arrays ensuring they align perfectly
+
+    // A. History dataset: Needs real data for the past, and NULL for the future
+    // We create an array of 'null' equal to the length of the future dates
+    const futureNulls = new Array(futureDates.length).fill(null);
+    const historyDataPoints = historySales.concat(futureNulls);
+
+    // B. Forecast dataset: Needs NULL for the past, and real data for the future.
+    // To make the lines connect visually, we start the forecast line
+    // at the LAST point of the history line.
+
+    const forecastDataPoints = new Array(historyDates.length - 1).fill(null);
+
+    // Safety check: if we have history, grab the last value to connect the lines
+    if (historySales.length > 0) {
+        forecastDataPoints.push(historySales[historySales.length - 1]);
+    } else {
+        forecastDataPoints.push(null);
+    }
+
+    // Add the future predictions to the array
+    // (Using the spread operator '...' to push all items at once)
+    forecastDataPoints.push(...futureSales);
+
+    // 4. Draw the Chart
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: allLabels,
+            datasets: [{
+                label: 'Historical Sales',
+                data: historyDataPoints,
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderWidth: 2,
+                tension: 0.3, // Makes the line slightly curved
+                fill: true
+            },
+            {
+                label: 'AI Prediction',
+                data: forecastDataPoints,
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 2,
+                borderDash: [5, 5], // Dotted line for future
+                tension: 0.3,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Quantity Sold (kg)' }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

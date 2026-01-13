@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Purchase Order #{{ po.id }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #525659; padding: 40px; }
+        .invoice-container { background: white; max-width: 800px; margin: 0 auto; padding: 40px; box-shadow: 0 0 15px rgba(0,0,0,0.2); }
+        .brand-color { color: #2563eb; }
+
+        /* This hides the print button when actually printing on paper/PDF */
+        @media print {
+            body { background: white; padding: 0; }
+            .invoice-container { box-shadow: none; padding: 0; margin: 0; max-width: 100%; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="invoice-container">
+        <div class="d-flex justify-content-between align-items-center mb-5 border-bottom pb-4">
+            <div>
+                <h1 class="brand-color fw-bold"><i class="fa-solid fa-cube"></i> Distributor Inc.</h1>
+                <p class="mb-0 text-muted">Islamabad, Pakistan</p>
+                <p class="text-muted">Phone: +92 300 1234567</p>
+            </div>
+            <div class="text-end">
+                <h2 class="fw-bold text-uppercase text-secondary">Purchase Order</h2>
+                <h4 class="text-dark">PO #{{ po.id }}</h4>
+                <p class="mb-0">Date: {{ po.date_ordered|date:"M d, Y" }}</p>
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col-6">
+                <h5 class="fw-bold text-muted text-uppercase small">Vendor / Supplier</h5>
+                <h4 class="fw-bold">{{ po.supplier.name }}</h4>
+                <p class="mb-0">{{ po.supplier.email }}</p>
+                <p>{{ po.supplier.phone }}</p>
+            </div>
+            <div class="col-6 text-end">
+                <h5 class="fw-bold text-muted text-uppercase small">Ship To</h5>
+                <h4 class="fw-bold">Distributor Warehouse</h4>
+                <p class="mb-0">Main Storage Facility</p>
+                <p>Islamabad, ICT</p>
+            </div>
+        </div>
+
+        <table class="table table-bordered mb-4">
+            <thead class="table-light">
+                <tr>
+                    <th>Description</th>
+                    <th class="text-center">Quantity</th>
+                    <th class="text-end">Unit Price</th>
+                    <th class="text-end">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="py-3">
+                        <span class="fw-bold">{{ po.product.name }}</span><br>
+                        <small class="text-muted">Stock Replenishment</small>
+                    </td>
+                    <td class="text-center py-3">{{ po.quantity }}</td>
+                    <td class="text-end py-3">${{ po.unit_cost }}</td>
+                    <td class="text-end py-3 fw-bold">${% widthratio po.quantity 1 po.unit_cost %}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="row justify-content-end mb-5">
+            <div class="col-5">
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span>Subtotal:</span>
+                    <span class="fw-bold">${% widthratio po.quantity 1 po.unit_cost %}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom text-success">
+                    <span>Total Due:</span>
+                    <span class="fw-bold fs-4">${% widthratio po.quantity 1 po.unit_cost %}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5 text-center no-print">
+            <button onclick="window.print()" class="btn btn-primary btn-lg me-2">
+                Print Invoice / Save as PDF
+            </button>
+            <button onclick="window.history.back()" class="btn btn-outline-secondary btn-lg">
+                Go Back
+            </button>
+        </div>
+    </div>
+
+</body>
+</html>

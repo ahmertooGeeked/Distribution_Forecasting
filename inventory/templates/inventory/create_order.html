@@ -1,0 +1,47 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="m-0">New Sale Order</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="customer" class="form-label">Customer</label>
+                            <select name="customer" id="customer" class="form-control" required>
+                                <option value="" selected disabled>Select a Customer...</option>
+                                {% for c in customers %}
+                                    <option value="{{ c.id }}">{{ c.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="product" class="form-label">Product</label>
+                            <select name="product" id="product" class="form-control" required>
+                                <option value="" selected disabled>Select a Product...</option>
+                                {% for p in products %}
+                                    <option value="{{ p.id }}">{{ p.name }} - ${{ p.price }} (Stock: {{ p.stock_quantity }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="quantity" class="form-label">Quantity (kg)</label>
+                            <input type="number" name="quantity" id="quantity" class="form-control" min="1" placeholder="Enter amount" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 mt-3">Confirm Sale</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

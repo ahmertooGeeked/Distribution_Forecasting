@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="card border-0 shadow-sm mx-auto" style="max-width: 600px;">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0 text-center">
+                <h2 class="text-primary fw-bold">
+                    <i class="fa-solid fa-square-plus me-2"></i> Update Stock
+                </h2>
+                <p class="text-muted">Select a product to add inventory.</p>
+            </div>
+
+            <div class="card-body p-4">
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark">Select Product</label>
+                        <select name="product" class="form-select form-select-lg" required>
+                            <option value="" selected disabled>-- Choose a product --</option>
+                            {% for product in products %}
+                                <option value="{{ product.id }}">
+                                    {{ product.name }} (Current Stock: {{ product.stock_quantity }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark">Quantity to Add</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fa-solid fa-cubes"></i></span>
+                            <input type="number" name="quantity" class="form-control form-control-lg" min="1" required placeholder="e.g. 50">
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-5">
+                        <a href="{% url 'dashboard' %}" class="btn btn-light border px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-5 fw-bold">Add Stock</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
