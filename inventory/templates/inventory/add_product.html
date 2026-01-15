@@ -8,7 +8,7 @@
             </div>
 
             <div class="card-body p-5">
-                <form method="POST">
+                <form method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
 
                     <div class="row g-4">
@@ -25,12 +25,17 @@
                             {{ form.category }}
                         </div>
 
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-secondary">Product Image</label>
+                            {{ form.image }}
+                        </div>
+
                         <div class="col-12"><hr class="text-muted opacity-25"></div>
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-secondary">Buying Price (Cost)</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light">$</span>
+                                <span class="input-group-text bg-light">{{ currency }}</span>
                                 {{ form.cost_price }}
                             </div>
                         </div>
@@ -38,7 +43,7 @@
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-secondary">Selling Price</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light">$</span>
+                                <span class="input-group-text bg-light">{{ currency }}</span>
                                 {{ form.price }}
                             </div>
                         </div>
@@ -69,9 +74,11 @@
     </div>
 
     <script>
-        // This simple script finds all inputs in the form and makes them look pretty
+        // Styling script
         document.querySelectorAll('input, select').forEach(field => {
-            if (!field.classList.contains('form-control') && !field.classList.contains('form-select')) {
+            if (field.type === 'file') {
+                field.classList.add('form-control'); // Style the file input
+            } else if (!field.classList.contains('form-control') && !field.classList.contains('form-select')) {
                 field.classList.add('form-control');
             }
         });

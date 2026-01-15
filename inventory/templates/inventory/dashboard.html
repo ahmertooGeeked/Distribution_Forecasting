@@ -1,9 +1,87 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
+<style>
+    @media print {
+        /* 1. Hide Sidebar, Buttons, and UI Elements */
+        .sidebar, .btn, .navbar, .no-print, header {
+            display: none !important;
+        }
+
+        /* 2. Reset Main Content Layout */
+        body {
+            background-color: white !important;
+            font-size: 12pt;
+            -webkit-print-color-adjust: exact !important; /* Force colors/backgrounds to print */
+            print-color-adjust: exact !important;
+        }
+
+        .main-content {
+            margin-left: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+
+        .container-fluid {
+            padding: 0 !important;
+            max-width: 100% !important;
+        }
+
+        /* 3. Card Styling for Paper */
+        .card {
+            border: 1px solid #ddd !important;
+            box-shadow: none !important;
+            break-inside: avoid; /* Prevent cutting cards in half across pages */
+            margin-bottom: 20px !important;
+        }
+
+        .card-header {
+            background-color: #f8f9fa !important;
+            border-bottom: 1px solid #ddd !important;
+            color: #000 !important;
+        }
+
+        /* 4. Chart Sizing */
+        canvas {
+            max-width: 100% !important;
+            max-height: 300px !important; /* Limit height to save paper space */
+        }
+
+        /* 5. Force Grid Layout (Stats in one row) */
+        .col-xl-3, .col-md-6 {
+            flex: 0 0 25% !important;
+            max-width: 25% !important;
+        }
+
+        /* Make charts side-by-side on print */
+        .col-lg-8, .col-lg-4, .col-lg-6 {
+            flex: 0 0 50% !important;
+            max-width: 50% !important;
+        }
+
+        /* 6. Add a Print Header */
+        #print-header {
+            display: block !important;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 2px solid #4f46e5;
+            padding-bottom: 10px;
+        }
+    }
+
+    /* Hide Print Header on Screen */
+    #print-header { display: none; }
+</style>
+
 <div class="container-fluid p-0">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div id="print-header">
+        <h2 class="fw-bold" style="color: #4f46e5;">Distribution Command Center</h2>
+        <p class="text-muted">Generated Report • {% now "F j, Y" %}</p>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
         <div>
             <h3 class="fw-bold text-dark mb-1">Distribution Command Center</h3>
             <p class="text-muted small mb-0">Overview of your inventory and sales performance.</p>
@@ -19,14 +97,13 @@
     </div>
 
     <div class="row g-4 mb-4">
-
         <div class="col-xl-3 col-md-6">
-            <div class="card h-100 position-relative overflow-hidden">
+            <div class="card h-100 position-relative overflow-hidden shadow-sm border-0">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
                             <p class="text-muted fw-bold small text-uppercase mb-1">Total Revenue</p>
-                            <h2 class="fw-bold text-primary mb-0">${{ total_revenue|floatformat:2 }}</h2>
+                            <h2 class="fw-bold text-primary mb-0">{{ currency }} {{ total_revenue|floatformat:2 }}</h2>
                         </div>
                         <div class="bg-primary-light text-primary rounded p-2">
                             <i class="fa-solid fa-sack-dollar fa-lg"></i>
@@ -40,26 +117,26 @@
         </div>
 
         <div class="col-xl-3 col-md-6">
-            <div class="card h-100 position-relative overflow-hidden">
+            <div class="card h-100 position-relative overflow-hidden shadow-sm border-0">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
-                            <p class="text-muted fw-bold small text-uppercase mb-1">Net Income</p>
-                            <h2 class="fw-bold text-primary mb-0">${{ total_profit|floatformat:2 }}</h2>
+                            <p class="text-muted fw-bold small text-uppercase mb-1">Gross Profit</p>
+                            <h2 class="fw-bold text-success mb-0">{{ currency }} {{ gross_profit|floatformat:2 }}</h2>
                         </div>
-                        <div class="bg-primary-light text-primary rounded p-2">
-                            <i class="fa-solid fa-chart-line fa-lg"></i>
+                        <div class="bg-success-subtle text-success rounded p-2">
+                            <i class="fa-solid fa-hand-holding-dollar fa-lg"></i>
                         </div>
                     </div>
                 </div>
                 <svg viewBox="0 0 100 25" class="w-100 position-absolute bottom-0 start-0" preserveAspectRatio="none" style="height: 40px; opacity: 0.2;">
-                    <path d="M0,15 Q30,25 50,10 T100,15 V25 H0 Z" fill="#4f46e5" />
+                    <path d="M0,15 Q30,25 50,10 T100,15 V25 H0 Z" fill="#198754" />
                 </svg>
             </div>
         </div>
 
         <div class="col-xl-3 col-md-6">
-            <div class="card h-100 position-relative overflow-hidden">
+            <div class="card h-100 position-relative overflow-hidden shadow-sm border-0">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
@@ -78,7 +155,7 @@
         </div>
 
         <div class="col-xl-3 col-md-6">
-            <div class="card h-100 position-relative overflow-hidden">
+            <div class="card h-100 position-relative overflow-hidden shadow-sm border-0">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
@@ -97,51 +174,83 @@
         </div>
     </div>
 
-    <div class="row g-4 mb-4">
-        <div class="col-lg-8">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-white border-0 py-3">
-                    <h5 class="fw-bold mb-0 text-dark">Sales Trend (Last 30 Days)</h5>
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-header bg-white border-0 py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h5 class="fw-bold mb-0 text-dark">Sales Trend (Last {{ current_range }} Days)</h5>
+                    <div class="btn-group no-print" role="group">
+                        <a href="?range=30" class="btn btn-sm btn-outline-primary {% if current_range == 30 %}active{% endif %}">30D</a>
+                        <a href="?range=60" class="btn btn-sm btn-outline-primary {% if current_range == 60 %}active{% endif %}">60D</a>
+                        <a href="?range=90" class="btn btn-sm btn-outline-primary {% if current_range == 90 %}active{% endif %}">90D</a>
+                    </div>
                 </div>
                 <div class="card-body">
-                    <div style="height: 300px; width: 100%;">
+                    <div style="height: 350px; width: 100%;">
                         <canvas id="salesChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-4">
-            <div class="card shadow-sm h-100">
+    </div>
+
+    <div class="row g-4 mb-4">
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100 border-0">
                 <div class="card-header bg-white border-0 py-3">
-                    <h5 class="fw-bold mb-0 text-dark">Top Selling Products</h5>
+                    <h5 class="fw-bold mb-0 text-dark">🔥 Best Sellers</h5>
                 </div>
-                <div class="card-body">
-                    <div style="height: 300px; width: 100%;">
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <div style="height: 300px; width: 100%; max-width: 400px;">
                         <canvas id="productsChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow-sm">
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100 border-0">
                 <div class="card-header bg-white border-0 py-3">
-                    <h5 class="fw-bold mb-0 text-dark">Current Stock Levels</h5>
+                    <h5 class="fw-bold mb-0 text-dark">🏆 Top Customers</h5>
                 </div>
-                <div class="card-body">
-                    <div style="height: 300px; width: 100%;">
-                        <canvas id="stockChart"></canvas>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <tbody>
+                                {% for c in top_customers %}
+                                <tr>
+                                    <td class="ps-4" style="width: 60px;">
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-sm"
+                                             style="width: 45px; height: 45px; background: linear-gradient(135deg, #4f46e5, #818cf8); -webkit-print-color-adjust: exact;">
+                                            {{ c.name|slice:":1" }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <h6 class="mb-0 fw-bold text-dark">{{ c.name }}</h6>
+                                        <small class="text-muted">{{ c.order_count }} Orders Placed</small>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="d-flex flex-column align-items-end">
+                                            <span class="fw-bold fs-5" style="color: #4f46e5;">{{ currency }} {{ c.total_spent|floatformat:0 }}</span>
+                                            <span class="badge bg-primary-light rounded-pill small" style="color: #4f46e5; border: 1px solid #eee;">Lifetime Value</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="3" class="text-center py-4 text-muted">No data available.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row g-4">
+    <div class="row g-4 mb-4">
         <div class="col-lg-8">
-            <div class="card shadow-sm h-100">
+            <div class="card shadow-sm h-100 border-0">
                 <div class="card-header bg-white border-0 py-3">
                     <h5 class="fw-bold mb-0 text-dark">Recent Sales Orders</h5>
                 </div>
@@ -155,7 +264,7 @@
                                     <th>Customer</th>
                                     <th>Amount</th>
                                     <th>Status</th>
-                                    <th class="pe-4">Action</th>
+                                    <th class="pe-4 no-print">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -171,10 +280,16 @@
                                             {{ order.customer.name }}
                                         </div>
                                     </td>
-                                    <td class="fw-bold">${{ order.total_amount }}</td>
-                                    <td><span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill">Completed</span></td>
-                                    <td class="pe-4">
-                                        <a href="#" class="btn btn-sm btn-outline-primary rounded-pill">View</a>
+                                    <td class="fw-bold">{{ currency }} {{ order.total_amount }}</td>
+                                    <td>
+                                        {% if order.payment_status == 'PAID' %}
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 rounded-pill">Paid</span>
+                                        {% else %}
+                                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 rounded-pill">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="pe-4 no-print">
+                                        <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-primary rounded-pill">View</a>
                                     </td>
                                 </tr>
                                 {% empty %}
@@ -188,21 +303,30 @@
         </div>
 
         <div class="col-lg-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-danger text-white py-3 rounded-top">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-header bg-danger text-white py-3 rounded-top" style="-webkit-print-color-adjust: exact;">
                     <h5 class="m-0 fw-bold"><i class="fa-solid fa-triangle-exclamation me-2"></i> Low Stock Alerts</h5>
                 </div>
                 <div class="card-body p-0">
                     <ul class="list-group list-group-flush">
                         {% for item in low_stock_items %}
                         <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                            <span class="fw-medium">{{ item.name }}</span>
-                            <span class="badge bg-danger rounded-pill">{{ item.stock_quantity }} left</span>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-danger-subtle text-danger rounded p-2 me-3">
+                                    <i class="fa-solid fa-box"></i>
+                                </div>
+                                <div>
+                                    <span class="fw-bold text-dark d-block">{{ item.name }}</span>
+                                    <small class="text-muted">Threshold: {{ item.low_stock_threshold }}</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-danger rounded-pill px-3 py-2">Only {{ item.stock_quantity }} left</span>
                         </li>
                         {% empty %}
                         <li class="list-group-item text-center text-success py-5">
-                            <i class="fa-solid fa-check-circle fa-2x mb-2"></i><br>
-                            Stock levels are healthy!
+                            <i class="fa-solid fa-check-circle fa-3x mb-3"></i><br>
+                            <h6 class="fw-bold">All Good!</h6>
+                            <p class="text-muted small">Stock levels are healthy.</p>
                         </li>
                         {% endfor %}
                     </ul>
@@ -210,6 +334,22 @@
             </div>
         </div>
     </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="fw-bold mb-0 text-dark">Current Stock Levels</h5>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px; width: 100%;">
+                        <canvas id="stockChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -222,7 +362,7 @@
         const stockNames = JSON.parse('{{ stock_names|safe }}');
         const stockLevels = JSON.parse('{{ stock_levels|safe }}');
 
-        // Sales Chart (Line)
+        // Sales Chart
         const ctxSales = document.getElementById('salesChart');
         if(ctxSales) {
             new Chart(ctxSales.getContext('2d'), {
@@ -230,9 +370,9 @@
                 data: {
                     labels: dateLabels.length ? dateLabels : ['No Data'],
                     datasets: [{
-                        label: 'Revenue ($)',
+                        label: 'Revenue',
                         data: revenueData.length ? revenueData : [0],
-                        borderColor: '#4f46e5', // Theme Purple
+                        borderColor: '#4f46e5',
                         backgroundColor: 'rgba(79, 70, 229, 0.1)',
                         borderWidth: 2,
                         fill: true,
@@ -244,7 +384,7 @@
             });
         }
 
-        // Products Chart (Doughnut)
+        // Products Chart
         const ctxProducts = document.getElementById('productsChart');
         if(ctxProducts) {
             new Chart(ctxProducts.getContext('2d'), {
@@ -253,7 +393,7 @@
                     labels: productNames.length ? productNames : ['No Data'],
                     datasets: [{
                         data: productQtys.length ? productQtys : [1],
-                        backgroundColor: ['#4f46e5', '#818cf8', '#c7d2fe', '#6366f1', '#312e81'], // Purple Shades
+                        backgroundColor: ['#4f46e5', '#818cf8', '#c7d2fe', '#6366f1', '#312e81'],
                         borderWidth: 0
                     }]
                 },
@@ -261,7 +401,7 @@
             });
         }
 
-        // Stock Chart (Bar)
+        // Stock Chart
         const ctxStock = document.getElementById('stockChart');
         if(ctxStock) {
             new Chart(ctxStock.getContext('2d'), {
@@ -271,7 +411,7 @@
                     datasets: [{
                         label: 'Available Stock',
                         data: stockLevels.length ? stockLevels : [0],
-                        backgroundColor: '#4f46e5', // Theme Purple
+                        backgroundColor: '#4f46e5',
                         borderRadius: 4
                     }]
                 },

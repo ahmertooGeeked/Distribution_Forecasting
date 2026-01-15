@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="m-0 fw-bold text-primary">Update Order #{{ order.id }}</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label class="form-label text-muted small fw-bold text-uppercase">Payment Status</label>
+                            <select name="payment_status" class="form-select form-select-lg">
+                                <option value="PENDING" {% if order.payment_status == 'PENDING' %}selected{% endif %}>Unpaid (Pending)</option>
+                                <option value="PAID" {% if order.payment_status == 'PAID' %}selected{% endif %}>Paid</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label text-muted small fw-bold text-uppercase">Delivery Status</label>
+                            <select name="delivery_status" class="form-select form-select-lg">
+                                <option value="PENDING" {% if order.delivery_status == 'PENDING' %}selected{% endif %}>Processing</option>
+                                <option value="DELIVERED" {% if order.delivery_status == 'DELIVERED' %}selected{% endif %}>Delivered</option>
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">Save Changes</button>
+                            <a href="{% url 'order_list' %}" class="btn btn-light text-muted">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

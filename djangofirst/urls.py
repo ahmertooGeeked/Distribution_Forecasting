@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.urls import path, include  # <--- Added 'include' here
 from inventory import views
 from django.contrib.auth import views as auth_views
+from django.conf import settings               # <--- Add this
+from django.conf.urls.static import static
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -31,7 +33,8 @@ urlpatterns = [
     # --- SALES APP (New) ---
     # This connects the new 'sales/urls.py' you just created.
     # Access these at: /sales/create/, /sales/list/, /sales/add-customer/
-    path('sales/', include('sales.urls')),
+    #path('sales/', include('sales.urls')),
+    path('', include('inventory.urls')),
 
     # --- OLD ORDERS / SALES (Commented out to avoid conflict) ---
     # These are now handled by the 'sales' app above.
@@ -50,3 +53,6 @@ urlpatterns = [
     path("purchase-history/", views.purchase_history, name="purchase_history"),
     path("purchase-invoice/<int:pk>/", views.purchase_invoice, name="purchase_invoice"),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,25 +1,34 @@
 from django.db import models
 from django.utils import timezone
-from inventory.models import Product  # <--- This import is ONLY valid here in sales.py
+from inventory.models import Product  # Valid import here
 
 class Customer(models.Model):
     name = models.CharField(max_length=200, unique=True)
-
-    # --- ADDED EMAIL FIELD ---
     email = models.EmailField(max_length=254, blank=True, null=True)
-    # -------------------------
-
     phone = models.CharField(max_length=50, blank=True)
     address = models.TextField(blank=True)
 
     def __str__(self): return self.name
 
 class Order(models.Model):
-    STATUS_CHOICES = [('PENDING', 'Pending'), ('COMPLETED', 'Completed'), ('CANCELLED', 'Cancelled')]
+    # --- SEPARATE STATUS CHOICES ---
+    PAYMENT_CHOICES = [
+        ('PENDING', 'Unpaid'),
+        ('PAID', 'Paid'),
+    ]
+    DELIVERY_CHOICES = [
+        ('PENDING', 'Processing'),
+        ('DELIVERED', 'Delivered'),
+        ('CANCELLED', 'Cancelled'),
+    ]
+
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     date = models.DateTimeField(default=timezone.now)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    # --- NEW FIELDS ---
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default='PENDING')
+    delivery_status = models.CharField(max_length=20, choices=DELIVERY_CHOICES, default='PENDING')
 
     def __str__(self): return f"Order #{self.id} - {self.customer.name}"
 

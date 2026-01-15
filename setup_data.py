@@ -1,132 +1,141 @@
 import os
 import random
-from datetime import date, timedelta
-from decimal import Decimal  # <--- Added this to fix the math
-
 import django
+from datetime import timedelta
+from decimal import Decimal
 from django.utils import timezone
+from django.db import transaction
 
-# Setup Django Environment
+# 1. Setup Django Environment
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "djangofirst.settings")
 django.setup()
 
-from inventory.models import Category, Product
-from partners.models import Customer, Supplier
-from transactions.models import SalesItem, SalesOrder
-
+from inventory.models import Category, Product, Supplier
+from sales.models import Customer, Order, OrderItem
 
 def run():
-    print("--- 🚀 STARTING DATA GENERATION ---")
+    print("--- 🚀 STARTING SMART DATA GENERATION (FIXED DATES) ---")
 
-    # 1. Create Categories
-    cats = ["Vegetables", "Fruits", "Dairy", "Meat", "Beverages"]
-    cat_objs = []
-    for c in cats:
-        obj, created = Category.objects.get_or_create(name=c)
-        cat_objs.append(obj)
-    print(f"✅ Categories Checked/Created")
+    print("🧹 Flushing old data...")
+    OrderItem.objects.all().delete()
+    Order.objects.all().delete()
+    Product.objects.all().delete()
+    Category.objects.all().delete()
+    Customer.objects.all().delete()
+    Supplier.objects.all().delete()
 
-    # 2. Create Suppliers
-    suppliers = ["Fresh Farms Ltd", "Global Foods", "Dairy King", "Meat Masters"]
+    # 1. Categories
+    print("📦 Creating Categories...")
+    categories = ['Vegetables', 'Fruits', 'Bakery', 'Dairy', 'Beverages', 'Meat', 'Pantry', 'Household']
+    cat_objs = {name: Category.objects.create(name=name) for name in categories}
+
+    # 2. Suppliers
+    print("🚚 Creating Suppliers...")
+    suppliers = ['FarmFresh Distributors', 'Daily Dairy Co.', 'Global Beverages', 'City Bakery Supply', 'Home Essentials Ltd']
     for s in suppliers:
-        Supplier.objects.get_or_create(
-            name=s, email=f"contact@{s.replace(' ', '').lower()}.com"
-        )
-    print(f"✅ Suppliers Checked/Created")
+        Supplier.objects.create(name=s, email=f"contact@{s.replace(' ','').lower()}.com")
 
-    # 3. Create Products
-    products_list = [
-        ("Tomato", 0, 1.50),
-        ("Potato", 0, 0.80),
-        ("Onion", 0, 1.20),
-        ("Apple", 1, 2.50),
-        ("Banana", 1, 1.10),
-        ("Orange", 1, 3.00),
-        ("Milk 1L", 2, 1.50),
-        ("Cheese", 2, 5.00),
-        ("Yogurt", 2, 2.00),
-        ("Beef Steak", 3, 15.00),
-        ("Chicken Breast", 3, 8.50),
-        ("Cola", 4, 1.00),
-        ("Water 500ml", 4, 0.50),
+    # 3. Product Definitions
+    raw_products = [
+        ('Potatoes', 'Vegetables', 0.50),
+        ('Onions', 'Vegetables', 0.40),
+        ('Tomatoes', 'Vegetables', 0.80),
+        ('Carrots', 'Vegetables', 0.60),
+        ('Apples', 'Fruits', 1.20),
+        ('Bananas', 'Fruits', 0.90),
+        ('Oranges', 'Fruits', 1.50),
+        ('White Bread', 'Bakery', 1.00),
+        ('Whole Wheat Bread', 'Bakery', 1.50),
+        ('Multigrain Bread', 'Bakery', 1.80),
+        ('Whole Milk', 'Dairy', 1.20),
+        ('Low Fat Milk', 'Dairy', 1.20),
+        ('Mineral Water', 'Beverages', 0.30),
+        ('Orange Juice', 'Beverages', 2.00),
+        ('Cola', 'Beverages', 0.80),
+        ('Chicken Breast', 'Meat', 4.50),
+        ('Beef Mince', 'Meat', 5.50),
+        ('Rice', 'Pantry', 1.50),
+        ('Pasta', 'Pantry', 0.90),
+        ('Dish Soap', 'Household', 2.00),
     ]
 
+    print("🛒 Creating Products...")
     prod_objs = []
-    for name, cat_idx, price in products_list:
-        sku = f"{name[:3].upper()}-{random.randint(100, 999)}"
-        prod, created = Product.objects.get_or_create(
-            name=name,
-            defaults={
-                "category": cat_objs[cat_idx],
-                "sku": sku,
-                "price": price,
-                "stock_quantity": random.randint(50, 500),
-                "low_stock_threshold": 20,
-            },
-        )
-        prod_objs.append(prod)
-    print(f"✅ Products Checked/Created")
 
-    # 4. Create Customers
-    customer_names = [
-        "Burger King",
-        "Hilton Hotel",
-        "Pizza Hut",
-        "Local Cafe",
-        "John Doe",
-    ]
-    cust_objs = []
-    for name in customer_names:
-        cust, created = Customer.objects.get_or_create(
-            name=name,
-            defaults={
-                "credit_limit": 5000.00,
-                "email": f"manager@{name.replace(' ', '').lower()}.com",
-            },
-        )
-        cust_objs.append(cust)
-    print(f"✅ Customers Checked/Created")
+    for name, cat, base_cost in raw_products:
+        variants = []
+        if cat in ['Vegetables', 'Fruits', 'Meat']:
+            variants.append((f"{name} (1kg)", base_cost * 2.0))
+            variants.append((f"{name} (0.5kg)", base_cost * 1.1))
+        elif cat == 'Bakery':
+            variants.append((f"{name} (Full Loaf)", base_cost * 2.0))
+            variants.append((f"{name} (Half Loaf)", base_cost * 1.1))
+        elif cat in ['Dairy', 'Beverages']:
+            variants.append((f"{name} (1L)", base_cost * 2.0))
+            variants.append((f"{name} (0.5L)", base_cost * 1.1))
+        else:
+            variants.append((f"{name} (Standard Pack)", base_cost * 1.5))
 
-    # 5. Generate Fake Sales (History)
-    print("⏳ Generating Sales History...")
-
-    # We create 50 orders
-    for _ in range(50):
-        days_ago = random.randint(0, 30)
-        order_date = timezone.now() - timedelta(days=days_ago)
-        customer = random.choice(cust_objs)
-
-        # Create Order
-        order = SalesOrder.objects.create(customer=customer, status="COMPLETED")
-        order.date = order_date
-        order.save()
-
-        # Add items and calculate Total
-        total_order_price = Decimal("0.00")  # <--- Start as Decimal
-
-        for _ in range(random.randint(1, 5)):
-            prod = random.choice(prod_objs)
-            qty = random.randint(1, 20)
-
-            # FORCE CONVERSION TO DECIMAL TO FIX THE ERROR
-            # We convert the price to string first, then to Decimal to be safe
-            price_decimal = Decimal(str(prod.price))
-
-            SalesItem.objects.create(
-                order=order,
-                product=prod,
-                quantity=qty,
-                unit_price=price_decimal,
-                total_price=price_decimal * qty,
+        for p_name, p_cost in variants:
+            p_price = p_cost * 1.3
+            p = Product.objects.create(
+                name=p_name,
+                category=cat_objs[cat],
+                cost_price=Decimal(f"{p_cost:.2f}"),
+                price=Decimal(f"{p_price:.2f}"),
+                stock_quantity=random.randint(20, 200)
             )
-            total_order_price += price_decimal * qty
+            prod_objs.append(p)
 
-        order.total_amount = total_order_price
-        order.save()
+    # 4. Customers
+    print("👥 Creating Customers...")
+    customer_names = ['City Mart', 'Green Grocers', 'Healthy Bites Cafe', 'Corner Store', 'Family Mart', 'Fresh Stop']
+    customers = [Customer.objects.create(name=n, email=f"{n.split()[0].lower()}@mail.com", phone="555-0100") for n in customer_names]
 
-    print(f"✅ Generated 50 Historical Sales Orders")
-    print("--- 🎉 FINISHED! Your database is ready. ---")
+    # 5. Generate 2 Years of Sales
+    print("⏳ Generating 2 Years of Orders...")
 
+    end_date = timezone.now()
+
+    with transaction.atomic():
+        for i in range(800):
+            # 1. Randomize Date
+            days_ago = int(random.triangular(0, 730, 0)) # Weighted to recent
+            order_date = end_date - timedelta(days=days_ago)
+
+            # 2. Create Order (Initially today)
+            order = Order.objects.create(
+                customer=random.choice(customers),
+                payment_status='PAID',
+                delivery_status='DELIVERED' if days_ago > 2 else 'PENDING',
+                total_amount=0
+            )
+
+            # 3. Add Items
+            total = Decimal("0.00")
+            for _ in range(random.randint(1, 8)):
+                prod = random.choice(prod_objs)
+                qty = random.randint(1, 5)
+
+                line_total = prod.price * qty
+                total += line_total
+
+                OrderItem.objects.create(
+                    order=order,
+                    product=prod,
+                    quantity=qty,
+                    price=prod.price
+                )
+
+            # 4. Save Total (This might reset date if auto_now=True)
+            order.total_amount = total
+            order.save()
+
+            # 5. FORCE UPDATE DATE (This MUST be last)
+            # This bypasses the 'save()' method and directly updates the DB column
+            Order.objects.filter(id=order.id).update(date=order_date)
+
+    print("--- 🎉 DATA GENERATION COMPLETE! ---")
 
 if __name__ == "__main__":
     run()

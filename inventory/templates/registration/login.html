@@ -4,79 +4,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Distributor System</title>
+    <title>Login - Nexus</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --primary-blue: #2563eb;
-            --sidebar-bg: #1e293b;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-body: #f3f4f6;
+            --text-main: #111827;
         }
+
         body {
-            background-color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Inter', sans-serif;
+            margin: 0;
         }
+
         .login-card {
-            width: 900px;
-            display: flex;
+            width: 100%;
+            max-width: 400px;
             background: white;
-            border-radius: 20px;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
             overflow: hidden;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
-        .login-visual {
-            background: linear-gradient(135deg, var(--primary-blue), #1d4ed8);
-            width: 50%;
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
+
+        .brand-header {
+            background-color: white;
+            padding: 40px 40px 20px 40px;
+            text-align: center;
+        }
+
+        .brand-logo {
+            display: inline-flex;
+            align-items: center;
             justify-content: center;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary) 0%, #818cf8 100%);
             color: white;
+            border-radius: 16px;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
         }
-        .login-form-side {
-            width: 50%;
-            padding: 50px;
+
+        .brand-text {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 0;
+            letter-spacing: -0.5px;
         }
+
+        .card-body {
+            padding: 40px;
+            padding-top: 20px;
+        }
+
         .form-control {
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 15px;
+            border: 1px solid #e5e7eb;
+            background-color: #f9fafb;
+            font-size: 0.95rem;
+            transition: all 0.2s;
         }
+
+        .form-control:focus {
+            background-color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-light); /* Uses your theme's light blue */
+        }
+
         .btn-primary {
-            background-color: var(--primary-blue);
+            background-color: var(--primary);
+            border: none;
             padding: 12px;
-            border-radius: 8px;
+            border-radius: 12px;
             font-weight: 600;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+
+        .input-group-custom {
+            position: relative;
+        }
+
+        .input-group-custom input {
+            padding-left: 45px;
         }
     </style>
 </head>
 <body>
+
     <div class="login-card">
-        <div class="login-visual">
-            <i class="fa-solid fa-cube fa-4x mb-4"></i>
-            <h2 class="fw-bold">Distribution Forecaster</h2>
-            <p class="opacity-75">Securely manage inventory, sales, and AI-driven demand forecasting in one place.</p>
+        <div class="brand-header">
+            <div class="brand-logo">
+                <i class="fa-solid fa-layer-group"></i>
+            </div>
+            <h1 class="brand-text">Nexus</h1>
+            <p class="text-muted mt-2 small">Distribution Command Center</p>
         </div>
-        <div class="login-form-side">
-            <h3 class="fw-bold text-dark mb-4">Welcome Back</h3>
+
+        <div class="card-body">
+            {% if form.errors %}
+                <div class="alert alert-danger py-2 small rounded-3 mb-4 text-center border-0 bg-danger-subtle text-danger">
+                    <i class="fa-solid fa-circle-exclamation me-1"></i> Invalid username or password.
+                </div>
+            {% endif %}
+
             <form method="post">
                 {% csrf_token %}
-                <div class="mb-3">
-                    <label class="form-label text-muted small fw-bold">USERNAME</label>
-                    <input type="text" name="username" class="form-control" placeholder="Enter username" required>
-                </div>
+
                 <div class="mb-4">
-                    <label class="form-label text-muted small fw-bold">PASSWORD</label>
-                    <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                    <label class="form-label small fw-bold text-muted text-uppercase" style="font-size: 0.75rem;">Username</label>
+                    <div class="input-group-custom">
+                        <i class="fa-solid fa-user input-icon"></i>
+                        <input type="text" name="username" class="form-control" placeholder="Enter your ID" required autofocus>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary w-100 mb-3">Login to Dashboard</button>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-muted text-uppercase" style="font-size: 0.75rem;">Password</label>
+                    <div class="input-group-custom">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-2">
+                    Sign In <i class="fa-solid fa-arrow-right ms-2"></i>
+                </button>
             </form>
-            <p class="text-center text-muted small">New here? <a href="{% url 'register' %}" class="text-primary text-decoration-none fw-bold">Contact Admin to Register</a></p>
+        </div>
+
+        <div class="bg-light p-3 text-center border-top">
+            <small class="text-muted">© {% now "Y" %} Nexus Systems Inc.</small>
         </div>
     </div>
+
 </body>
 </html>

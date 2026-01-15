@@ -1,21 +1,21 @@
-{% extends 'dashboard/base.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
 <div class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="m-0">New Sale Order</h5>
-                </div>
-                <div class="card-body">
-                    <form method="POST">
-                        {% csrf_token %}
+    <form method="POST">
+        {% csrf_token %}
 
+        <div class="row justify-content-center">
+            <div class="col-lg-3 mb-4">
+                <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="m-0 fw-bold text-primary">Order Settings</h6>
+                    </div>
+                    <div class="card-body">
                         <div class="mb-3">
-                            <label for="customer" class="form-label">Customer</label>
-                            <select name="customer" id="customer" class="form-control" required>
-                                <option value="" selected disabled>Select a Customer...</option>
+                            <label class="form-label small fw-bold text-muted">Customer</label>
+                            <select name="customer" class="form-select" required>
+                                <option value="" selected disabled>Select Customer...</option>
                                 {% for c in customers %}
                                     <option value="{{ c.id }}">{{ c.name }}</option>
                                 {% endfor %}
@@ -23,25 +23,123 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="product" class="form-label">Product</label>
-                            <select name="product" id="product" class="form-control" required>
-                                <option value="" selected disabled>Select a Product...</option>
-                                {% for p in products %}
-                                    <option value="{{ p.id }}">{{ p.name }} - ${{ p.price }} (Stock: {{ p.stock_quantity }})</option>
-                                {% endfor %}
+                            <label class="form-label small fw-bold text-muted">Payment</label>
+                            <select name="payment_status" class="form-select">
+                                <option value="PENDING">Unpaid</option>
+                                <option value="PAID">Paid</option>
                             </select>
                         </div>
 
                         <div class="mb-3">
-                            <label for="quantity" class="form-label">Quantity (kg)</label>
-                            <input type="number" name="quantity" id="quantity" class="form-control" min="1" placeholder="Enter amount" required>
+                            <label class="form-label small fw-bold text-muted">Delivery</label>
+                            <select name="delivery_status" class="form-select">
+                                <option value="PENDING">Processing</option>
+                                <option value="DELIVERED">Delivered</option>
+                            </select>
                         </div>
 
-                        <button type="submit" class="btn btn-success w-100 mt-3">Confirm Sale</button>
-                    </form>
+                        <hr>
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            <i class="fa-solid fa-check me-2"></i> Confirm Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-9">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 fw-bold text-primary">Order Items</h6>
+                        <button type="button" class="btn btn-sm btn-success" onclick="addItemRow()">
+                            <i class="fa-solid fa-plus"></i> Add Item
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0" id="itemsTable">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th style="width: 50%;">Product</th>
+                                        <th style="width: 20%;">Stock</th>
+                                        <th style="width: 20%;">Quantity</th>
+                                        <th style="width: 10%;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="itemsBody">
+                                    </tbody>
+                            </table>
+                        </div>
+
+                        <div id="emptyState" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-basket-shopping fa-2x mb-3 opacity-25"></i>
+                            <p>No items added. Click "Add Item" to start.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </form>
 </div>
+
+<template id="rowTemplate">
+    <tr>
+        <td>
+            <select name="products" class="form-select product-select" required onchange="updateStock(this)">
+                <option value="" selected disabled>Select Product...</option>
+                {% for p in products %}
+                    <option value="{{ p.id }}" data-stock="{{ p.stock_quantity }}">{{ p.name }} ({{ currency }} {{ p.price }})</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td>
+            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle stock-badge">Select Item</span>
+        </td>
+        <td>
+            <input type="number" name="quantities" class="form-control" min="1" value="1" required>
+        </td>
+        <td class="text-end">
+            <button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="removeRow(this)">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+
+<script>
+    function addItemRow() {
+        const tbody = document.getElementById('itemsBody');
+        const template = document.getElementById('rowTemplate');
+        const emptyState = document.getElementById('emptyState');
+        const clone = template.content.cloneNode(true);
+        tbody.appendChild(clone);
+        emptyState.style.display = 'none';
+    }
+
+    function removeRow(button) {
+        const row = button.closest('tr');
+        row.remove();
+        const tbody = document.getElementById('itemsBody');
+        if (tbody.children.length === 0) {
+            document.getElementById('emptyState').style.display = 'block';
+        }
+    }
+
+    function updateStock(selectElement) {
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+        const stock = selectedOption.getAttribute('data-stock');
+        const row = selectElement.closest('tr');
+        const badge = row.querySelector('.stock-badge');
+
+        if (stock) {
+            badge.innerText = stock + " available";
+            if (parseInt(stock) < 10) {
+                badge.className = "badge bg-danger-subtle text-danger border border-danger-subtle stock-badge";
+            } else {
+                badge.className = "badge bg-success-subtle text-success border border-success-subtle stock-badge";
+            }
+        }
+    }
+
+    window.onload = function() { addItemRow(); };
+</script>
 {% endblock %}
