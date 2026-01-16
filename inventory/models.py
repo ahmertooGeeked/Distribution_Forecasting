@@ -11,21 +11,32 @@ class Category(models.Model):
     def __str__(self): return self.name
 
 # ============================
-# 2. PRODUCT
+# 2. PRODUCT (UPDATED)
 # ============================
 class Product(models.Model):
+    # --- NEW: Unit Choices ---
+    UNIT_CHOICES = [
+        ('pcs', 'Pieces (pcs)'),
+        ('kg', 'Kilogram (kg)'),
+        ('ltr', 'Liter (L)'),
+        ('box', 'Box'),
+        ('m', 'Meter (m)'),
+        ('doz', 'Dozen'),
+    ]
+
     name = models.CharField(max_length=200)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
 
-    # --- ADDED IMAGE FIELD ---
-    image = models.ImageField(upload_to='product_images/', blank=True, null=True)
+    # --- NEW FIELD ---
+    unit = models.CharField(max_length=5, choices=UNIT_CHOICES, default='pcs')
 
+    image = models.ImageField(upload_to='product_images/', blank=True, null=True)
     stock_quantity = models.PositiveIntegerField(default=0)
     low_stock_threshold = models.PositiveIntegerField(default=10)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     cost_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
-    def __str__(self): return self.name
+    def __str__(self): return f"{self.name} ({self.unit})"
 
 # ============================
 # 3. SUPPLIER & PO

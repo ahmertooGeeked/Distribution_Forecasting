@@ -44,7 +44,7 @@
                  style="background: linear-gradient(135deg, #4f46e5, #818cf8);">
                 <div class="card-body text-center py-5">
                     <h5 class="card-title opacity-75 text-uppercase small fw-bold">Forecast for Next 7 Days</h5>
-                    <p class="display-3 fw-bold my-3">{{ next_week_forecast }} <span class="fs-4">kg</span></p>
+                    <p class="display-3 fw-bold my-3">{{ next_week_forecast }} <span class="fs-4">{{ selected_product.unit }}</span></p>
                     <p class="card-text opacity-75 small">Estimated stock needed to meet demand.</p>
                 </div>
             </div>
@@ -57,7 +57,7 @@
                     <li class="list-group-item d-flex justify-content-between align-items-center py-3">
                         <span class="text-muted">Current Stock</span>
                         <span class="badge bg-secondary-subtle text-dark border border-secondary-subtle rounded-pill px-3">
-                            {{ selected_product.stock_quantity }} kg
+                            {{ selected_product.stock_quantity }} {{ selected_product.unit }}
                         </span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center py-3">
@@ -102,7 +102,7 @@
 
     forecastDataPoints.push(...futureSales);
 
-    // 4. Draw the Chart (UPDATED COLORS)
+    // 4. Draw the Chart
     new Chart(ctx, {
         type: 'line',
         data: {
@@ -110,7 +110,6 @@
             datasets: [{
                 label: 'Historical Sales',
                 data: historyDataPoints,
-                // UPDATED: Purple Theme Colors
                 borderColor: '#4f46e5',
                 backgroundColor: 'rgba(79, 70, 229, 0.1)',
                 borderWidth: 2,
@@ -120,8 +119,7 @@
             {
                 label: 'AI Prediction',
                 data: forecastDataPoints,
-                // Prediction stays distinct (Red/Pink) or you can make it dotted purple
-                borderColor: '#fb7185', // Soft Red/Pink for contrast
+                borderColor: '#fb7185',
                 borderWidth: 2,
                 borderDash: [5, 5],
                 tension: 0.3,
@@ -138,7 +136,8 @@
                 y: {
                     beginAtZero: true,
                     grid: { borderDash: [2] },
-                    title: { display: true, text: 'Quantity Sold (kg)' }
+                    // UPDATED: Dynamic Unit Label
+                    title: { display: true, text: 'Quantity Sold ({{ selected_product.unit }})' }
                 },
                 x: {
                     grid: { display: false }

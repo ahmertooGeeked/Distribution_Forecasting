@@ -16,7 +16,8 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th class="py-3 ps-4" style="width: 80px;">Image</th> <th class="py-3">Name</th>
+                            <th class="py-3 ps-4" style="width: 80px;">Image</th>
+                            <th class="py-3">Name</th>
                             <th class="py-3">Category</th>
                             <th class="py-3">Stock</th>
                             <th class="py-3">Price</th>
@@ -45,17 +46,19 @@
                                     {{ product.category.name|default:"-" }}
                                 </span>
                             </td>
+
                             <td>
                                 {% if product.stock_quantity <= product.low_stock_threshold %}
                                     <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">
-                                        {{ product.stock_quantity }} (Low)
+                                        {{ product.stock_quantity }} {{ product.unit }} (Low)
                                     </span>
                                 {% else %}
                                     <span class="badge bg-success bg-opacity-10 text-success border border-success">
-                                        {{ product.stock_quantity }}
+                                        {{ product.stock_quantity }} {{ product.unit }}
                                     </span>
                                 {% endif %}
                             </td>
+
                             <td>{{ currency }} {{ product.price }}</td>
                             <td><span class="text-muted">{{ currency }} {{ product.cost_price }}</span></td>
                             <td class="text-end pe-4">
