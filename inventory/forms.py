@@ -1,7 +1,8 @@
 from django import forms
 
 # 1. Import Inventory Models (Local)
-from .models import Product, Category, Supplier, PurchaseOrder
+# --- UPDATED: Added StockAdjustment to imports ---
+from .models import Product, Category, Supplier, PurchaseOrder, StockAdjustment
 
 # 2. Import Sales Models (From the new Sales app)
 from sales.models import Order, Customer
@@ -25,7 +26,6 @@ class ProductForm(forms.ModelForm):
             'cost_price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Cost Price'}),
             'stock_quantity': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Current Stock'}),
             'low_stock_threshold': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Alert Limit'}),
-            # If you are using image upload, make sure to add it to fields above too
         }
 
 class CategoryForm(forms.ModelForm):
@@ -56,6 +56,20 @@ class PurchaseOrderForm(forms.ModelForm):
             'product': forms.Select(attrs={'class': 'form-select'}),
             'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
             'unit_cost': forms.NumberInput(attrs={'class': 'form-control'}),
+        }
+
+# ============================
+# STOCK ADJUSTMENT FORM (NEW)
+# ============================
+class StockAdjustmentForm(forms.ModelForm):
+    class Meta:
+        model = StockAdjustment
+        fields = ['product', 'quantity', 'reason', 'note']
+        widgets = {
+            'product': forms.Select(attrs={'class': 'form-select'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
+            'reason': forms.Select(attrs={'class': 'form-select'}),
+            'note': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Optional details...'}),
         }
 
 # ============================

@@ -22,6 +22,7 @@ urlpatterns = [
 
     # --- Stock & Suppliers ---
     path('stock/add/', views.add_stock, name='add_stock'),
+    path('stock/waste/', views.report_waste, name='report_waste'),
     path('suppliers/', views.supplier_list, name='supplier_list'),
     path('suppliers/add/', views.add_supplier, name='add_supplier'),
     path('suppliers/edit/<int:pk>/', views.edit_supplier, name='edit_supplier'),
@@ -35,12 +36,22 @@ urlpatterns = [
     # --- SALES & ORDERS ---
     path('orders/', views.order_list, name='order_list'),
     path('orders/new/', views.create_order, name='create_order'),
-    path('orders/edit/<int:pk>/', views.edit_order, name='edit_order'), # <--- ADDED
+    path('orders/edit/<int:pk>/', views.edit_order, name='edit_order'),
     path('orders/<int:pk>/', views.order_detail, name='order_detail'),
 
     # --- CUSTOMERS ---
     path('customers/', views.customer_list, name='customer_list'),
     path('customers/add/', views.add_customer, name='add_customer'),
+    # --- NEW: Added Edit Customer Path ---
+    path('customers/edit/<int:pk>/', views.edit_customer, name='edit_customer'),
+
+    # --- FINANCE ---
+    path('finance/receivables/', views.receivables_dashboard, name='receivables_dashboard'),
+    path('finance/report/', views.financial_report, name='financial_report'),
+
+    # --- LOGISTICS ---
+    path('logistics/', views.delivery_dashboard, name='delivery_dashboard'),
+    path('logistics/run-sheet/', views.generate_run_sheet, name='generate_run_sheet'),
 
     # --- Authentication ---
     path('register/', views.register, name='register'),

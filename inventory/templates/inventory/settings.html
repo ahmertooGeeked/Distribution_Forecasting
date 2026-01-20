@@ -1,31 +1,48 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white border-bottom py-3">
-                    <h5 class="m-0 fw-bold text-primary">System Settings</h5>
+<div class="container-fluid">
+    <h1 class="h3 mb-4 fw-bold">System Settings</h1>
+
+    <div class="card shadow-sm border-0" style="max-width: 600px;">
+        <div class="card-body p-4">
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Currency Symbol</label>
+                    <input type="text" name="currency_symbol" class="form-control"
+                           value="{{ settings.currency_symbol }}" style="width: 100px;">
+                    <div class="form-text text-muted">E.g., $, €, £, Rs</div>
                 </div>
-                <div class="card-body p-4">
-                    <form method="POST">
-                        {% csrf_token %}
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold text-muted">Currency Symbol</label>
-                            <p class="small text-muted mb-2">This will update the symbol across the entire dashboard (e.g., $, PKR, €, £).</p>
+                <hr class="my-4" style="border-color: var(--border-color);">
 
-                            <div class="input-group">
-                                <input type="text" name="currency_symbol" class="form-control"
-                                       value="{{ settings.currency_symbol }}"
-                                       placeholder="Enter symbol (e.g. PKR)" required>
-                                <button type="submit" class="btn btn-primary">Save Changes</button>
-                            </div>
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Interface Theme</label>
+                    <div class="d-flex gap-3">
+                        <div class="form-check p-0 flex-grow-1">
+                            <input type="radio" class="btn-check" name="theme" id="themeLight" value="light"
+                                   {% if settings.theme == 'light' %}checked{% endif %}>
+                            <label class="btn btn-outline-primary w-100 py-3" for="themeLight">
+                                <i class="fa-solid fa-sun me-2"></i> Light Mode
+                            </label>
                         </div>
-                    </form>
+
+                        <div class="form-check p-0 flex-grow-1">
+                            <input type="radio" class="btn-check" name="theme" id="themeDark" value="dark"
+                                   {% if settings.theme == 'dark' %}checked{% endif %}>
+                            <label class="btn btn-outline-primary w-100 py-3" for="themeDark">
+                                <i class="fa-solid fa-moon me-2"></i> Dark Mode
+                            </label>
+                        </div>
+                    </div>
                 </div>
-            </div>
+
+                <button type="submit" class="btn btn-primary mt-3 w-100">
+                    <i class="fa-solid fa-save me-2"></i> Save Changes
+                </button>
+            </form>
         </div>
     </div>
 </div>

@@ -62,10 +62,22 @@
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center py-3">
                         <span class="text-muted">Recommendation</span>
-                        {% if selected_product.stock_quantity < next_week_forecast %}
-                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3">ORDER MORE</span>
+
+                        {% if reorder_qty > 0 %}
+                            <div class="text-end">
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle mb-2">
+                                    ORDER MORE
+                                </span>
+                                <br>
+                                <a href="{% url 'create_purchase_order' %}?product={{ selected_product.id }}&qty={{ reorder_qty }}"
+                                   class="btn btn-sm btn-danger shadow-sm">
+                                   <i class="fa-solid fa-cart-shopping me-1"></i> Order {{ reorder_qty }} {{ selected_product.unit }}
+                                </a>
+                            </div>
                         {% else %}
-                            <span class="badge bg-success-subtle text-success border border-success-subtle px-3">SUFFICIENT</span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-3">
+                                SUFFICIENT
+                            </span>
                         {% endif %}
                     </li>
                 </ul>

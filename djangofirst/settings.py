@@ -5,22 +5,11 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-change-this-key-for-production-deployment'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-# For now, keep True so you can see errors if deployment fails.
 DEBUG = True
-
-# --- 1. ALLOWED HOSTS UPDATE ---
-# Allow all hosts so PythonAnywhere works immediately
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -32,8 +21,6 @@ INSTALLED_APPS = [
     # --- YOUR APPS ---
     'inventory',
     'sales',
-
-    # Optional: Add 'crispy_forms' and 'crispy_bootstrap5' if you installed them
 ]
 
 MIDDLEWARE = [
@@ -51,7 +38,6 @@ ROOT_URLCONF = 'djangofirst.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        # Ensure templates folder is found
         'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -60,16 +46,15 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
+                # --- CRITICAL: Loads settings on every page ---
+                'inventory.context_processors.global_settings',
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = 'djangofirst.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
     'default': {
@@ -78,62 +63,43 @@ DATABASES = {
     }
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
-
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.1/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
-
 STATIC_URL = 'static/'
-
-# --- 2. STATIC FILES CONFIGURATION (CRITICAL FOR DEPLOY) ---
-# This is where files go when you run "python manage.py collectstatic"
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-# This is where you put your custom CSS/JS during development
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
-
-# --- 3. MEDIA FILES (FOR PRODUCT IMAGES) ---
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# --- LOGIN REDIRECTS ---
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 LOGIN_URL = 'login'
+
+# ====================================
+# EMAIL SETTINGS (Gmail SMTP)
+# ====================================
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # <--- Changed from localhost
+EMAIL_PORT = 587               # <--- Changed from 1025
+EMAIL_USE_TLS = True           # <--- Changed from False (Required for Gmail)
+
+# Your Gmail Address (Google needs to know who is logging in)
+EMAIL_HOST_USER = 'ahmerahmz72004@gmail.com'
+
+# Your App Password (I copied this from your file)
+EMAIL_HOST_PASSWORD = 'ohvq gwvy dzut btiq'
+
+DEFAULT_FROM_EMAIL = 'Nexus System <ahmerahmz72004@gmail.com>'

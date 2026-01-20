@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 mt-4">
+
+            <div class="card-header text-white py-3"
+                 style="background: linear-gradient(135deg, #4f46e5, #818cf8);">
+                <h5 class="mb-0 fw-bold">
+                    <i class="fa-solid fa-triangle-exclamation me-2"></i> Report Spoilage / Waste
+                </h5>
+            </div>
+
+            <div class="card-body p-4">
+                <p class="text-muted small mb-4">
+                    Use this form to remove items from inventory that were <strong>not sold</strong> (e.g., spoiled, damaged, or lost).
+                    This will decrease your stock count immediately.
+                </p>
+
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Product</label>
+                        {{ form.product }}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-dark">Quantity Lost</label>
+                            {{ form.quantity }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-dark">Reason</label>
+                            {{ form.reason }}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark">Notes (Optional)</label>
+                        {{ form.note }}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn text-white fw-bold shadow-sm"
+                                style="background-color: #4f46e5;">
+                            <i class="fa-solid fa-check me-2"></i> Confirm Loss
+                        </button>
+                        <a href="{% url 'product_list' %}" class="btn btn-light border text-muted">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

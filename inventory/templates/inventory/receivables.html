@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 fw-bold text-dark">Accounts Receivable</h1>
+        <a href="{% url 'create_order' %}" class="btn btn-primary">
+            <i class="fa-solid fa-plus me-2"></i> New Sale
+        </a>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color: white;">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase opacity-75 fw-bold small">Total Pending Payment</h6>
+                    <h2 class="display-5 fw-bold mb-0">{{ system_settings.currency_symbol }} {{ total_receivables|floatformat:2 }}</h2>
+                    <p class="mt-2 mb-0 opacity-75 small">
+                        <i class="fa-solid fa-circle-exclamation me-1"></i> Cash waiting to be collected
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="m-0 fw-bold text-dark">Debtors Summary</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Customer</th>
+                                    <th>Total Debt</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for customer in customers %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-gradient rounded-circle d-flex align-items-center justify-content-center me-3"
+                                                 style="width: 35px; height: 35px; font-size: 0.9rem; font-weight: bold;">
+                                                {{ customer.name|slice:":1" }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold text-dark">{{ customer.name }}</div>
+                                                <small class="text-muted">{{ customer.phone }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-danger">
+                                            {{ system_settings.currency_symbol }} {{ customer.debt|floatformat:2 }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2" class="text-center py-4 text-muted">No debtors found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="m-0 fw-bold text-dark">Recent Unpaid Orders</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in pending_orders %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <a href="{% url 'order_detail' order.id %}" class="fw-bold text-decoration-none">
+                                            #{{ order.id }}
+                                        </a>
+                                        <br>
+                                        <small class="text-muted">{{ order.date|date:"M d" }}</small>
+                                    </td>
+                                    <td>{{ order.customer.name }}</td>
+                                    <td class="fw-bold">
+                                        {{ system_settings.currency_symbol }} {{ order.total_amount|floatformat:2 }}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
+                                            {{ order.payment_status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">No pending orders.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
