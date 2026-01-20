@@ -140,6 +140,25 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
+                            <p class="text-muted fw-bold small text-uppercase mb-1">Inventory Asset</p>
+                            <h2 class="fw-bold text-info mb-0">{{ currency }} {{ total_inventory_value|floatformat:2 }}</h2>
+                        </div>
+                        <div class="bg-info-subtle text-info rounded p-2">
+                            <i class="fa-solid fa-boxes-stacked fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+                 <svg viewBox="0 0 100 25" class="w-100 position-absolute bottom-0 start-0" preserveAspectRatio="none" style="height: 40px; opacity: 0.2;">
+                    <path d="M0,20 Q50,5 100,20 V25 H0 Z" fill="#0dcaf0" />
+                </svg>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100 position-relative overflow-hidden shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
                             <p class="text-muted fw-bold small text-uppercase mb-1">Total Orders</p>
                             <h2 class="fw-bold text-primary mb-0">{{ total_orders }}</h2>
                         </div>
@@ -172,6 +191,7 @@
                 </svg>
             </div>
         </div>
+
     </div>
 
     <div class="row mb-4">

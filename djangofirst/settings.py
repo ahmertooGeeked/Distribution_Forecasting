@@ -1,11 +1,13 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
-SECRET_KEY = 'django-insecure-change-this-key-for-production-deployment'
+SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 
@@ -92,14 +94,12 @@ LOGIN_URL = 'login'
 # EMAIL SETTINGS (Gmail SMTP)
 # ====================================
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # <--- Changed from localhost
-EMAIL_PORT = 587               # <--- Changed from 1025
-EMAIL_USE_TLS = True           # <--- Changed from False (Required for Gmail)
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 
-# Your Gmail Address (Google needs to know who is logging in)
-EMAIL_HOST_USER = 'ahmerahmz72004@gmail.com'
+# Load sensitive data from environment variables
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
-# Your App Password (I copied this from your file)
-EMAIL_HOST_PASSWORD = 'ohvq gwvy dzut btiq'
-
-DEFAULT_FROM_EMAIL = 'Nexus System <ahmerahmz72004@gmail.com>'
+DEFAULT_FROM_EMAIL = f'Nexus System <{EMAIL_HOST_USER}>'

@@ -23,7 +23,7 @@ from sales.models import Order, OrderItem, Customer
 from .forms import ProductForm, CategoryForm, SupplierForm, PurchaseOrderForm, CustomerForm, StockAdjustmentForm
 
 # ==========================
-# 0. HELPER FUNCTIONS (UPDATED)
+# 0. HELPER FUNCTIONS
 # ==========================
 def check_stock_alert(request, product):
     """
@@ -45,13 +45,11 @@ def check_stock_alert(request, product):
         Please create a Purchase Order immediately to avoid stockout.
         """
 
-        # --- FIX: Hardcoded correct email to bypass database typo ---
         recipient = 'ahmerahmz72004@gmail.com'
 
         try:
             sender = 'Nexus System <ahmerahmz72004@gmail.com>'
             send_mail(subject, message, sender, [recipient], fail_silently=True)
-            # We add a subtle info message so the user knows an email was sent
             messages.info(request, f"System: Low stock alert sent for {product.name}.")
         except Exception as e:
             print(f"Email Error: {e}")
@@ -72,7 +70,7 @@ def register(request):
     return render(request, 'registration/register.html', {'form': form})
 
 # ==========================
-# 1. DASHBOARD
+# 1. DASHBOARD (UPDATED)
 # ==========================
 @login_required
 def dashboard(request):
@@ -125,6 +123,11 @@ def dashboard(request):
             top_product_names.append(item['product__name'])
             top_product_qtys.append(item['qty'])
 
+    # --- NEW: Total Inventory Value Calculation ---
+    total_inventory_value = Product.objects.aggregate(
+        value=Sum(ExpressionWrapper(F('stock_quantity') * F('cost_price'), output_field=DecimalField()))
+    )['value'] or 0
+
     recent_orders = Order.objects.select_related('customer').order_by('-date')[:5]
     low_stock_items = Product.objects.filter(stock_quantity__lte=F('low_stock_threshold'))
 
@@ -143,6 +146,7 @@ def dashboard(request):
         'total_orders': total_orders,
         'total_products': total_products,
         'gross_profit': gross_profit,
+        'total_inventory_value': total_inventory_value,  # <--- Added to context
         'recent_orders': recent_orders,
         'low_stock_items': low_stock_items,
         'top_customers': top_customers,
@@ -280,7 +284,7 @@ def create_order(request):
                         product.stock_quantity -= qty
                         product.save()
 
-                        # --- NEW: CHECK FOR ALERT ---
+                        # --- CHECK FOR ALERT ---
                         check_stock_alert(request, product)
 
                     else:
@@ -549,7 +553,7 @@ def report_waste(request):
                 product.save()
                 adjustment.save()
 
-                # --- NEW: CHECK FOR ALERT ---
+                # --- CHECK FOR ALERT ---
                 check_stock_alert(request, product)
 
                 messages.warning(request, f"Reported LOSS: {adjustment.quantity} {product.unit} of {product.name} ({adjustment.get_reason_display()})")
