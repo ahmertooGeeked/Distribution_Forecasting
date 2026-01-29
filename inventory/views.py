@@ -5,7 +5,10 @@ from django.db import transaction
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 from django.core.mail import send_mail
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 import json
+import ollama # <--- Imported Ollama Library
 from datetime import timedelta, date
 
 # --- PAGINATION IMPORT ---
@@ -146,7 +149,7 @@ def dashboard(request):
         'total_orders': total_orders,
         'total_products': total_products,
         'gross_profit': gross_profit,
-        'total_inventory_value': total_inventory_value,  # <--- Added to context
+        'total_inventory_value': total_inventory_value,
         'recent_orders': recent_orders,
         'low_stock_items': low_stock_items,
         'top_customers': top_customers,
@@ -512,7 +515,6 @@ def edit_customer(request, pk):
             return redirect('customer_list')
     else:
         form = CustomerForm(instance=customer)
-    # Reusing the add_customer.html template works perfectly here
     return render(request, 'inventory/add_customer.html', {'form': form, 'title': 'Edit Customer'})
 
 # ==========================
@@ -569,14 +571,11 @@ def report_waste(request):
 # ============================
 @login_required
 def receivables_dashboard(request):
-    # 1. Customer Summary
     customers_with_debt = Customer.objects.annotate(
         debt=Sum('order__total_amount', filter=~Q(order__payment_status='PAID'))
     ).filter(debt__gt=0).order_by('-debt')
 
     total_receivables = customers_with_debt.aggregate(Sum('debt'))['debt__sum'] or 0
-
-    # 2. Individual Order List
     pending_orders = Order.objects.filter(~Q(payment_status='PAID')).select_related('customer').order_by('-date')
 
     context = {
@@ -594,25 +593,21 @@ def financial_report(request):
     end_date = timezone.now()
     start_date = end_date - timedelta(days=30)
 
-    # 1. REVENUE
     revenue = Order.objects.filter(
         date__gte=start_date,
         payment_status='PAID'
     ).aggregate(total=Sum('total_amount'))['total'] or 0
 
-    # 2. COGS
     sold_items = OrderItem.objects.filter(order__date__gte=start_date, order__payment_status='PAID')
     cogs = 0
     for item in sold_items:
         cogs += (item.quantity * item.product.cost_price)
 
-    # 3. SPOILAGE
     waste_adjustments = StockAdjustment.objects.filter(date__gte=start_date)
     spoilage_loss = 0
     for adj in waste_adjustments:
         spoilage_loss += (adj.quantity * adj.product.cost_price)
 
-    # 4. NET PROFIT
     total_expenses = cogs + spoilage_loss
     net_profit = revenue - total_expenses
 
@@ -637,34 +632,25 @@ def financial_report(request):
 # ============================
 @login_required
 def delivery_dashboard(request):
-    # 1. Base Query: Show orders that are NOT yet delivered
     orders = Order.objects.filter(~Q(delivery_status='Delivered')).select_related('customer')
-
-    # 2. Date Filtering Logic
     today = timezone.now().date()
-    date_filter = request.GET.get('date')     # e.g., "2026-01-20"
-    view_all = request.GET.get('view_all')    # e.g., "true"
+    date_filter = request.GET.get('date')
+    view_all = request.GET.get('view_all')
     search_query = request.GET.get('q', '')
 
     filter_label = "Today's Orders"
 
     if view_all:
         filter_label = "All Pending Orders (Backlog)"
-
     elif date_filter:
         orders = orders.filter(date__date=date_filter)
         filter_label = f"Run Sheet for {date_filter}"
-
     elif search_query:
-        # Search global history
         filter_label = f"Search Results for '{search_query}'"
-
     else:
-        # Default: Show Today only
         orders = orders.filter(date__date=today)
         filter_label = "Today's Orders"
 
-    # 3. Search Logic
     if search_query:
         if search_query.isdigit():
             orders = orders.filter(Q(id=search_query) | Q(customer__name__icontains=search_query))
@@ -674,7 +660,6 @@ def delivery_dashboard(request):
                 Q(customer__address__icontains=search_query)
             )
 
-    # 4. Sorting Logic
     sort_by = request.GET.get('sort', 'date')
     direction = request.GET.get('dir', 'desc')
 
@@ -698,8 +683,6 @@ def delivery_dashboard(request):
         'current_sort': sort_by,
         'current_dir': direction,
         'next_dir': 'asc' if direction == 'desc' else 'desc',
-
-        # New Context Variables
         'today': today.strftime('%Y-%m-%d'),
         'filter_label': filter_label,
         'is_viewing_all': view_all,
@@ -715,7 +698,6 @@ def generate_run_sheet(request):
             messages.error(request, "No orders selected for the run sheet.")
             return redirect('delivery_dashboard')
 
-        # Get the specific orders selected
         orders = Order.objects.filter(id__in=order_ids).select_related('customer').order_by('customer__address')
 
         context = {
@@ -726,3 +708,88 @@ def generate_run_sheet(request):
         return render(request, 'inventory/run_sheet.html', context)
 
     return redirect('delivery_dashboard')
+
+# ============================
+# 13. CHATBOT API (OLLAMA SUPERCHARGED 🧠)
+# ============================
+@csrf_exempt
+def chatbot_api(request):
+    if request.method == 'POST':
+        print("🤖 CHATBOT: Request Received at View!")
+
+        try:
+            data = json.loads(request.body)
+            user_message = data.get('message', '')
+
+            # --- STEP 1: GATHER CONTEXT (FEED THE BRAIN) ---
+            context_parts = []
+
+            # A. Inventory Status
+            products = Product.objects.all()
+            prod_list = "CURRENT STOCK:\n"
+            for p in products:
+                prod_list += f"- {p.name}: {p.stock_quantity} units (Price: ${p.price})\n"
+            context_parts.append(prod_list)
+
+            # B. Financials (Revenue & Receivables)
+            total_rev = Order.objects.filter(payment_status='PAID').aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+            pending_rev = Order.objects.filter(~Q(payment_status='PAID')).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+            context_parts.append(f"FINANCIALS:\n- Total Confirmed Revenue: ${total_rev}\n- Pending Payments (Receivables): ${pending_rev}")
+
+            # C. Suppliers
+            suppliers = Supplier.objects.all()
+            supp_names = ", ".join([s.name for s in suppliers])
+            context_parts.append(f"OUR SUPPLIERS: {supp_names}")
+
+            # D. Customers (Top 5 by Spend)
+            top_customers = Customer.objects.annotate(spent=Sum('order__total_amount')).order_by('-spent')[:5]
+            cust_list = "TOP CUSTOMERS:\n"
+            for c in top_customers:
+                amount = c.spent if c.spent else 0
+                cust_list += f"- {c.name} (Spent: ${amount})\n"
+            context_parts.append(cust_list)
+
+            # E. Recent Waste/Loss
+            recent_waste = StockAdjustment.objects.filter(reason='WASTE').order_by('-date')[:5]
+            if recent_waste.exists():
+                waste_list = "RECENT WASTED STOCK:\n"
+                for w in recent_waste:
+                    waste_list += f"- {w.product.name}: {w.quantity} units lost on {w.date}\n"
+                context_parts.append(waste_list)
+
+            # Combine all data into one big text block for the AI
+            full_context = "\n\n".join(context_parts)
+
+            # --- DEBUG: See what the AI sees ---
+            # print(f"--- CONTEXT SENT TO AI ---\n{full_context}\n--------------------------")
+
+            # --- STEP 2: ASK OLLAMA ---
+            print(f"🤖 CHATBOT: Sending to Llama 3.2... Message: {user_message}")
+
+            response = ollama.chat(model='llama3.2', messages=[
+                {
+                    'role': 'system',
+                    'content': (
+                        f"You are 'Nexus Assistant', the AI manager for this distribution business. "
+                        f"Answer the user's question accurately based ONLY on the Data Report below.\n"
+                        f"Do not make up facts. If the answer isn't in the report, say you don't know.\n\n"
+                        f"=== DATA REPORT ===\n{full_context}\n==================="
+                    ),
+                },
+                {
+                    'role': 'user',
+                    'content': user_message,
+                },
+            ])
+
+            bot_reply = response['message']['content']
+
+            print(f"🤖 CHATBOT: Response Generated! Length: {len(bot_reply)} chars")
+
+            return JsonResponse({'response': bot_reply})
+
+        except Exception as e:
+            print(f"❌ CHATBOT ERROR: {e}")
+            return JsonResponse({'response': "⚠️ My AI brain is offline (Ollama not running). Please start Ollama on the server."}, status=200)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)

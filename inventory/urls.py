@@ -42,7 +42,6 @@ urlpatterns = [
     # --- CUSTOMERS ---
     path('customers/', views.customer_list, name='customer_list'),
     path('customers/add/', views.add_customer, name='add_customer'),
-    # --- NEW: Added Edit Customer Path ---
     path('customers/edit/<int:pk>/', views.edit_customer, name='edit_customer'),
 
     # --- FINANCE ---
@@ -57,4 +56,7 @@ urlpatterns = [
     path('register/', views.register, name='register'),
 
     path('settings/', views.settings_view, name='settings'),
+
+    # --- CHATBOT API ---
+    path('api/chatbot/', views.chatbot_api, name='chatbot_api'),
 ]
