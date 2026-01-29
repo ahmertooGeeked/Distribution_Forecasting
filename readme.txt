@@ -1,6 +1,8 @@
 
 Open your vscode at open your terminal by (Ctrl + `).
 
+git clone https://github.com/ahmertooGeeked/Distribution_Forecasting.git
+cd Distribution_Forecasting
 Go to the main folder location if your not already in it i-e(cd Distribution_Forecasting).
 Create virtual environment (python -m venv env).
 Activate virtual environment (.\env\Scripts\activate).
@@ -14,3 +16,4 @@ And now you can see your website.
 Login Details:
 Username: admin
 Password: acaonda31994
+
