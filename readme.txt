@@ -7,5 +7,10 @@ Activate virtual environment (.\env\Scripts\activate).
 Make sure your in C:/Distribution_Forecasting.
 Type command pip install -r requirements.txt to install dependencies.
 Type command (python manage.py runserver).
-There will me a local host ip 127.0.0.1, ctrl+click on it, make sure your browser is open.
+There will be a local host ip 127.0.0.1, ctrl+click on it, make sure your browser is open.
+
 And now you can see your website.
+
+Login Details:
+Username: admin
+Password: acaonda31994
