@@ -4,7 +4,7 @@
     <div class="container-fluid">
         <div class="card border-0 shadow-sm mx-auto" style="max-width: 850px;">
             <div class="card-header bg-primary text-white py-3">
-                <h4 class="m-0 fw-bold"><i class="fa-solid fa-box-open me-2"></i> Add New Product</h4>
+                <h4 class="m-0 fw-bold"><i class="fa-solid fa-box-open me-2"></i> {{ title|default:"Add New Product" }}</h4>
             </div>
 
             <div class="card-body p-5">
@@ -12,7 +12,7 @@
                     {% csrf_token %}
 
                     <div class="row g-4">
-                        <div class="col-md-6">
+                        <div class="col-md-5">
                             <label class="form-label fw-bold text-secondary">Product Name</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light"><i class="fa-solid fa-tag"></i></span>
@@ -20,14 +20,27 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold text-secondary">Barcode</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fa-solid fa-barcode"></i></span>
+                                {{ form.barcode }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
                             <label class="form-label fw-bold text-secondary">Category</label>
                             {{ form.category }}
                         </div>
 
-                        <div class="col-12">
+                        <div class="col-md-8">
                             <label class="form-label fw-bold text-secondary">Product Image</label>
                             {{ form.image }}
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-secondary">Unit Type</label>
+                            {{ form.unit }}
                         </div>
 
                         <div class="col-12"><hr class="text-muted opacity-25"></div>
@@ -35,7 +48,7 @@
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-secondary">Buying Price (Cost)</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light">{{ currency }}</span>
+                                <span class="input-group-text bg-light">{{ system_settings.currency_symbol|default:"$" }}</span>
                                 {{ form.cost_price }}
                             </div>
                         </div>
@@ -43,7 +56,7 @@
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-secondary">Selling Price</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light">{{ currency }}</span>
+                                <span class="input-group-text bg-light">{{ system_settings.currency_symbol|default:"$" }}</span>
                                 {{ form.price }}
                             </div>
                         </div>
@@ -51,7 +64,7 @@
                         <div class="col-12"><hr class="text-muted opacity-25"></div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-secondary">Initial Stock</label>
+                            <label class="form-label fw-bold text-secondary">Current Stock</label>
                             {{ form.stock_quantity }}
                         </div>
 
@@ -72,15 +85,4 @@
             </div>
         </div>
     </div>
-
-    <script>
-        // Styling script
-        document.querySelectorAll('input, select').forEach(field => {
-            if (field.type === 'file') {
-                field.classList.add('form-control'); // Style the file input
-            } else if (!field.classList.contains('form-control') && !field.classList.contains('form-select')) {
-                field.classList.add('form-control');
-            }
-        });
-    </script>
 {% endblock %}

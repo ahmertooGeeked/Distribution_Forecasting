@@ -24,6 +24,9 @@ class Product(models.Model):
     ]
 
     name = models.CharField(max_length=200)
+    # --- NEW: Barcode Field ---
+    barcode = models.CharField(max_length=50, unique=True, blank=True, null=True, help_text="Scan or type the barcode/serial number")
+
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     unit = models.CharField(max_length=5, choices=UNIT_CHOICES, default='pcs')
     image = models.ImageField(upload_to='product_images/', blank=True, null=True)
@@ -58,12 +61,11 @@ class PurchaseOrder(models.Model):
         super().save(*args, **kwargs)
 
 # ============================
-# 4. SYSTEM SETTINGS (UPDATED)
+# 4. SYSTEM SETTINGS
 # ============================
 class SystemSettings(models.Model):
     currency_symbol = models.CharField(max_length=5, default='$')
 
-    # --- NEW: Theme Field ---
     THEME_CHOICES = [
         ('light', 'Light Mode'),
         ('dark', 'Dark Mode'),

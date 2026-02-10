@@ -1,10 +1,9 @@
 from django import forms
 
-# 1. Import Inventory Models (Local)
-# --- UPDATED: Added StockAdjustment to imports ---
+# 1. Import Inventory Models
 from .models import Product, Category, Supplier, PurchaseOrder, StockAdjustment
 
-# 2. Import Sales Models (From the new Sales app)
+# 2. Import Sales Models
 from sales.models import Order, Customer
 
 # ============================
@@ -14,14 +13,15 @@ from sales.models import Order, Customer
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        # --- NEW: Added 'unit' to fields ---
-        fields = ['name', 'category', 'unit', 'price', 'cost_price', 'stock_quantity', 'low_stock_threshold', 'image']
+        # --- NEW: Added 'barcode' to fields ---
+        fields = ['name', 'barcode', 'category', 'unit', 'price', 'cost_price', 'stock_quantity', 'low_stock_threshold', 'image']
 
-        # --- NEW: Added widgets for styling ---
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Item Name'}),
+            # --- NEW: Barcode Widget ---
+            'barcode': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Scan Barcode or Enter Serial...'}),
             'category': forms.Select(attrs={'class': 'form-select'}),
-            'unit': forms.Select(attrs={'class': 'form-select'}),  # Dropdown for Unit
+            'unit': forms.Select(attrs={'class': 'form-select'}),
             'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Selling Price'}),
             'cost_price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Cost Price'}),
             'stock_quantity': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Current Stock'}),
@@ -59,7 +59,7 @@ class PurchaseOrderForm(forms.ModelForm):
         }
 
 # ============================
-# STOCK ADJUSTMENT FORM (NEW)
+# STOCK ADJUSTMENT FORM
 # ============================
 class StockAdjustmentForm(forms.ModelForm):
     class Meta:

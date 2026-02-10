@@ -18,6 +18,7 @@
                         <tr>
                             <th class="py-3 ps-4" style="width: 80px;">Image</th>
                             <th class="py-3">Name</th>
+                            <th class="py-3">Barcode</th>
                             <th class="py-3">Category</th>
                             <th class="py-3">Stock</th>
                             <th class="py-3">Price</th>
@@ -41,6 +42,15 @@
                             </td>
 
                             <td class="fw-bold text-primary">{{ product.name }}</td>
+
+                            <td>
+                                {% if product.barcode %}
+                                    <span class="badge bg-light text-dark border">{{ product.barcode }}</span>
+                                {% else %}
+                                    <span class="text-muted small">-</span>
+                                {% endif %}
+                            </td>
+
                             <td>
                                 <span class="badge bg-light text-dark border">
                                     {{ product.category.name|default:"-" }}
@@ -72,7 +82,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-5">
+                            <td colspan="8" class="text-center text-muted py-5">
                                 <i class="fa-solid fa-box-open fa-3x mb-3 text-light-grey"></i><br>
                                 No products found. Add one above!
                             </td>

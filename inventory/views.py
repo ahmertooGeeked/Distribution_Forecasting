@@ -29,10 +29,6 @@ from .forms import ProductForm, CategoryForm, SupplierForm, PurchaseOrderForm, C
 # 0. HELPER FUNCTIONS
 # ==========================
 def check_stock_alert(request, product):
-    """
-    Checks if a product's stock has fallen below the threshold.
-    If yes, sends an email alert to the admin.
-    """
     if product.stock_quantity <= product.low_stock_threshold:
         subject = f"⚠️ URGENT: Low Stock Alert - {product.name}"
         message = f"""
@@ -47,9 +43,7 @@ def check_stock_alert(request, product):
         Action Required:
         Please create a Purchase Order immediately to avoid stockout.
         """
-
         recipient = 'ahmerahmz72004@gmail.com'
-
         try:
             sender = 'Nexus System <ahmerahmz72004@gmail.com>'
             send_mail(subject, message, sender, [recipient], fail_silently=True)
@@ -73,7 +67,7 @@ def register(request):
     return render(request, 'registration/register.html', {'form': form})
 
 # ==========================
-# 1. DASHBOARD (UPDATED)
+# 1. DASHBOARD
 # ==========================
 @login_required
 def dashboard(request):
@@ -126,7 +120,6 @@ def dashboard(request):
             top_product_names.append(item['product__name'])
             top_product_qtys.append(item['qty'])
 
-    # --- NEW: Total Inventory Value Calculation ---
     total_inventory_value = Product.objects.aggregate(
         value=Sum(ExpressionWrapper(F('stock_quantity') * F('cost_price'), output_field=DecimalField()))
     )['value'] or 0
@@ -286,10 +279,7 @@ def create_order(request):
                         OrderItem.objects.create(order=order, product=product, quantity=qty, price=product.price)
                         product.stock_quantity -= qty
                         product.save()
-
-                        # --- CHECK FOR ALERT ---
                         check_stock_alert(request, product)
-
                     else:
                         messages.error(request, f"Error: Not enough stock for {product.name} (Only {product.stock_quantity} left).")
                         transaction.set_rollback(True)
@@ -728,7 +718,9 @@ def chatbot_api(request):
             products = Product.objects.all()
             prod_list = "CURRENT STOCK:\n"
             for p in products:
-                prod_list += f"- {p.name}: {p.stock_quantity} units (Price: ${p.price})\n"
+                # --- UPDATE: INCLUDE BARCODE IN CONTEXT ---
+                code = f"(Ref: {p.barcode})" if p.barcode else ""
+                prod_list += f"- {p.name} {code} | Stock: {p.stock_quantity} units | Price: ${p.price}\n"
             context_parts.append(prod_list)
 
             # B. Financials (Revenue & Receivables)
